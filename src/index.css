@@ -1,0 +1,108 @@
+@import "tailwindcss";
+
+@theme {
+  --color-primary: #00C3AA;
+  --color-primary-dark: #00A892;
+  --color-primary-light: #E6FFF9;
+  --color-bg: #F8FAFC;
+  --animate-confetti-fall: confetti-fall 2s ease-out forwards;
+  --animate-confetti-pop: confetti-pop 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+@keyframes confetti-fall {
+  0% {
+    opacity: 1;
+    transform: translateY(0) rotate(0deg) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(100vh) rotate(720deg) scale(0.3);
+  }
+}
+
+@keyframes confetti-pop {
+  0% {
+    opacity: 0;
+    transform: scale(0.3) translateY(20px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Segoe UI', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  letter-spacing: 0.01em;
+}
+
+#root {
+  min-height: 100vh;
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #CBD5E1;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #94A3B8;
+}
+
+@media (max-width: 768px) {
+  .kanban-board-container {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scroll-snap-type: x mandatory;
+  }
+
+  .kanban-board-container > div {
+    display: flex;
+    gap: 1rem;
+  }
+
+  .kanban-board-container > div > div {
+    scroll-snap-align: start;
+    flex-shrink: 0;
+    width: 85vw;
+    max-width: 320px;
+  }
+
+  .header-search-input {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .header-actions {
+    flex-wrap: wrap;
+    gap: 0.5rem !important;
+  }
+
+  .header-search-container {
+    order: 10;
+    width: 100%;
+    margin-top: 0.5rem;
+  }
+
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+}
