@@ -5,10 +5,12 @@ import { mockApplications } from './data/mockData';
 import AddModal from './components/AddModal';
 import Confetti from './components/Confetti';
 import ManageResumesModal from './components/ManageResumesModal';
+import TrashModal from './components/TrashModal';
 import './App.css';
 
 const STORAGE_KEY = 'meituan_job_kanban_data';
 const RESUME_VERSIONS_KEY = 'meituan_resume_versions';
+const TRASH_KEY = 'meituan_job_trash_data';
 const DEFAULT_RESUME_VERSIONS = ['通用版', '前端专项版', '美团专项版', '全栈版'];
 
 function App() {
@@ -20,6 +22,16 @@ function App() {
       console.error('Failed to load from localStorage:', e);
     }
     return mockApplications;
+  });
+
+  const [trash, setTrash] = useState(() => {
+    try {
+      const saved = localStorage.getItem(TRASH_KEY);
+      if (saved) return JSON.parse(saved);
+    } catch (e) {
+      console.error('Failed to load trash from localStorage:', e);
+    }
+    return [];
   });
 
   const [resumeVersions, setResumeVersions] = useState(() => {
@@ -38,6 +50,7 @@ function App() {
   const [showAddModal, setShowAddModal] = useState(false);
   const [editingApp, setEditingApp] = useState(null);
   const [showManageResumesModal, setShowManageResumesModal] = useState(false);
+  const [showTrashModal, setShowTrashModal] = useState(false);
   const [showConfetti, setShowConfetti] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [showOnlyPriority, setShowOnlyPriority] = useState(false);
@@ -59,6 +72,14 @@ function App() {
       prevStatusRef.current[app.id] = app.status;
     });
   }, [applications]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(TRASH_KEY, JSON.stringify(trash));
+    } catch (e) {
+      console.error('Failed to save trash to localStorage:', e);
+    }
+  }, [trash]);
 
   useEffect(() => {
     try {
@@ -101,8 +122,29 @@ function App() {
     );
   }, []);
 
-  const deleteApplication = useCallback((id) => {
-    setApplications((prev) => prev.filter((app) => app.id !== id));
+  const moveToTrash = useCallback((app) => {
+    const trashedItem = { ...app, deletedAt: Date.now() };
+    setTrash((prev) => [trashedItem, ...prev]);
+    setApplications((prev) => prev.filter((a) => a.id !== app.id));
+  }, []);
+
+  const restoreFromTrash = useCallback((id) => {
+    setTrash((prev) => {
+      const itemToRestore = prev.find((item) => item.id === id);
+      if (!itemToRestore) return prev;
+
+      const { deletedAt, ...restoredApp } = itemToRestore;
+      setApplications((appsPrev) => [...appsPrev, restoredApp]);
+      return prev.filter((item) => item.id !== id);
+    });
+  }, []);
+
+  const purgeFromTrash = useCallback((id) => {
+    setTrash((prev) => prev.filter((item) => item.id !== id));
+  }, []);
+
+  const emptyTrash = useCallback(() => {
+    setTrash([]);
   }, []);
 
   const updateNotes = useCallback((id, notes) => {
@@ -145,6 +187,7 @@ function App() {
   const handleReset = () => {
     localStorage.removeItem(STORAGE_KEY);
     localStorage.removeItem(RESUME_VERSIONS_KEY);
+    localStorage.removeItem(TRASH_KEY);
     window.location.reload();
   };
 
@@ -174,6 +217,7 @@ function App() {
       <Header
         onAddApplication={handleAddApplication}
         applications={applications}
+        trash={trash}
         onSearch={handleSearch}
         onTogglePriority={handleTogglePriority}
         showOnlyPriority={showOnlyPriority}
@@ -181,12 +225,13 @@ function App() {
         onExport={handleExport}
         onImport={handleImport}
         onReset={handleReset}
+        onOpenTrash={() => setShowTrashModal(true)}
       />
 
       <KanbanBoard
         applications={filteredApplications}
         onStatusChange={updateStatus}
-        onDelete={deleteApplication}
+        onDelete={moveToTrash}
         onUpdateNotes={updateNotes}
         onUpdatePrepared={updatePrepared}
         onEdit={handleEditApplication}
@@ -208,6 +253,16 @@ function App() {
           versions={resumeVersions}
           onClose={() => setShowManageResumesModal(false)}
           onUpdate={setResumeVersions}
+        />
+      )}
+
+      {showTrashModal && (
+        <TrashModal
+          trash={trash}
+          onClose={() => setShowTrashModal(false)}
+          onRestore={restoreFromTrash}
+          onPurge={purgeFromTrash}
+          onEmpty={emptyTrash}
         />
       )}
 

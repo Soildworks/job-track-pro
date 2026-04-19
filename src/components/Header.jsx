@@ -1,4 +1,4 @@
-import { Plus, Briefcase, CheckCircle, Clock, TrendingUp, Award, Target, Flame, Search, Eye } from 'lucide-react';
+import { Plus, Briefcase, CheckCircle, Clock, TrendingUp, Award, Target, Flame, Search, Eye, Trash } from 'lucide-react';
 import SettingsDropdown from './SettingsDropdown';
 
 function StatCard({ icon: Icon, label, value, color }) {
@@ -107,7 +107,7 @@ function PriorityCenter({ applications }) {
   );
 }
 
-export function Header({ onAddApplication, applications, onSearch, onTogglePriority, showOnlyPriority, searchQuery, onExport, onImport, onReset }) {
+export function Header({ onAddApplication, applications, trash, onSearch, onTogglePriority, showOnlyPriority, searchQuery, onExport, onImport, onReset, onOpenTrash }) {
   const interviewCount = applications.filter(a => a.status === 'INTERVIEW').length;
   const offerCount = applications.filter(a => a.status === 'OFFER').length;
   const appliedCount = applications.filter(a => a.status === 'APPLIED').length;
@@ -125,6 +125,19 @@ export function Header({ onAddApplication, applications, onSearch, onTogglePrior
           </div>
 
           <div className="header-actions flex items-center gap-2 md:gap-3">
+            <button
+              onClick={onOpenTrash}
+              className="relative p-2.5 rounded-xl text-gray-500 hover:text-slate-700 hover:bg-gray-100 transition-colors"
+              title="回收站"
+            >
+              <Trash size={18} />
+              {trash.length > 0 && (
+                <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center">
+                  {trash.length > 9 ? '9+' : trash.length}
+                </span>
+              )}
+            </button>
+
             <SettingsDropdown onExport={onExport} onImport={onImport} onReset={onReset} />
 
             <div className="relative header-search-container md:w-auto">

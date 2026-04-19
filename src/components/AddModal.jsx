@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { X, Building2, Briefcase, Calendar, Link2, FileText, Settings2, Video, Clock } from 'lucide-react';
+import { X, Building2, Briefcase, Calendar, Link2, FileText, Settings2, Video, Clock, Zap } from 'lucide-react';
 
 const SOURCE_OPTIONS = ['官网', 'Boss直聘', '内推', '猎头', '拉勾', '牛客', '其他'];
 
@@ -16,6 +16,7 @@ function AddModal({ initialData, onClose, onSubmit, resumeVersions, onManageResu
   const [source, setSource] = useState('');
   const [interviewTime, setInterviewTime] = useState('');
   const [meetingLink, setMeetingLink] = useState('');
+  const [quickMode, setQuickMode] = useState(false);
 
   useEffect(() => {
     if (initialData) {
@@ -44,14 +45,14 @@ function AddModal({ initialData, onClose, onSubmit, resumeVersions, onManageResu
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (!companyName.trim() || !position.trim() || !deadline) return;
+    if (!companyName.trim() || !position.trim()) return;
 
     const appData = {
       id: initialData ? initialData.id : Date.now().toString(),
       companyName: companyName.trim(),
       position: position.trim(),
       status: initialData ? initialData.status : 'WISHLIST',
-      deadline,
+      deadline: deadline || '',
       applyLink: applyLink.trim() || '',
       notes: notes.trim() || '',
       resumeTag,
@@ -77,9 +78,25 @@ function AddModal({ initialData, onClose, onSubmit, resumeVersions, onManageResu
     >
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden">
         <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
-          <h2 className="text-lg font-bold text-slate-800">
-            {isEdit ? '编辑岗位详情' : '新增求职申请'}
-          </h2>
+          <div className="flex items-center gap-3">
+            <h2 className="text-lg font-bold text-slate-800">
+              {isEdit ? '编辑岗位详情' : '新增求职申请'}
+            </h2>
+            {!isEdit && (
+              <button
+                type="button"
+                onClick={() => setQuickMode(!quickMode)}
+                className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium transition-colors ${
+                  quickMode
+                    ? 'bg-primary text-white'
+                    : 'text-gray-400 hover:text-slate-600 hover:bg-gray-100'
+                }`}
+              >
+                <Zap size={12} />
+                <span>快速</span>
+              </button>
+            )}
+          </div>
           <button
             onClick={onClose}
             className="p-1.5 rounded-lg hover:bg-gray-200 text-gray-400 hover:text-slate-600 transition-colors"
@@ -102,50 +119,10 @@ function AddModal({ initialData, onClose, onSubmit, resumeVersions, onManageResu
                 placeholder="例如：美团"
                 className={inputClass}
                 required
+                autoFocus
               />
             </div>
           </div>
-
-          {isInterviewMode && (
-            <div className="p-4 bg-orange-50/50 rounded-xl border border-orange-100 space-y-3">
-              <p className="text-xs font-semibold text-orange-600 flex items-center gap-1.5">
-                <Video size={13} />
-                <span>面试信息</span>
-              </p>
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-xs font-semibold text-slate-600 mb-1.5">
-                    面试时间
-                  </label>
-                  <div className="relative">
-                    <Clock size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-300" />
-                    <input
-                      type="datetime-local"
-                      value={interviewTime}
-                      onChange={(e) => setInterviewTime(e.target.value)}
-                      className={`${inputClass} pl-10`}
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-xs font-semibold text-slate-600 mb-1.5">
-                    会议链接
-                  </label>
-                  <div className="relative">
-                    <Video size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-300" />
-                    <input
-                      type="url"
-                      value={meetingLink}
-                      onChange={(e) => setMeetingLink(e.target.value)}
-                      placeholder="https://meeting..."
-                      className={inputClass}
-                    />
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
 
           <div>
             <label className="block text-xs font-semibold text-slate-600 mb-1.5">
@@ -164,97 +141,141 @@ function AddModal({ initialData, onClose, onSubmit, resumeVersions, onManageResu
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="block text-xs font-semibold text-slate-600 mb-1.5">
-                截止日期 <span className="text-red-400">*</span>
-              </label>
-              <div className="relative">
-                <Calendar size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-300" />
-                <input
-                  type="date"
-                  value={deadline}
-                  onChange={(e) => setDeadline(e.target.value)}
-                  className={`${inputClass} pl-10`}
-                  required
-                />
+          {!quickMode && (
+            <>
+              {isInterviewMode && (
+                <div className="p-4 bg-orange-50/50 rounded-xl border border-orange-100 space-y-3">
+                  <p className="text-xs font-semibold text-orange-600 flex items-center gap-1.5">
+                    <Video size={13} />
+                    <span>面试信息</span>
+                  </p>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-600 mb-1.5">
+                        面试时间
+                      </label>
+                      <div className="relative">
+                        <Clock size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-300" />
+                        <input
+                          type="datetime-local"
+                          value={interviewTime}
+                          onChange={(e) => setInterviewTime(e.target.value)}
+                          className={`${inputClass} pl-10`}
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-600 mb-1.5">
+                        会议链接
+                      </label>
+                      <div className="relative">
+                        <Video size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-300" />
+                        <input
+                          type="url"
+                          value={meetingLink}
+                          onChange={(e) => setMeetingLink(e.target.value)}
+                          placeholder="https://meeting..."
+                          className={inputClass}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-semibold text-slate-600 mb-1.5">
+                    截止日期
+                  </label>
+                  <div className="relative">
+                    <Calendar size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-300" />
+                    <input
+                      type="date"
+                      value={deadline}
+                      onChange={(e) => setDeadline(e.target.value)}
+                      className={`${inputClass} pl-10`}
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-slate-600 mb-1.5">
+                    投递途径
+                  </label>
+                  <select
+                    value={source}
+                    onChange={(e) => setSource(e.target.value)}
+                    className="w-full px-3 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-sm text-slate-700 transition-all"
+                  >
+                    <option value="">请选择</option>
+                    {SOURCE_OPTIONS.map((option) => (
+                      <option key={option} value={option}>{option}</option>
+                    ))}
+                  </select>
+                </div>
               </div>
-            </div>
 
-            <div>
-              <label className="block text-xs font-semibold text-slate-600 mb-1.5">
-                投递途径
-              </label>
-              <select
-                value={source}
-                onChange={(e) => setSource(e.target.value)}
-                className="w-full px-3 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-sm text-slate-700 transition-all"
-              >
-                <option value="">请选择</option>
-                {SOURCE_OPTIONS.map((option) => (
-                  <option key={option} value={option}>{option}</option>
-                ))}
-              </select>
-            </div>
-          </div>
+              <div>
+                <div className="flex items-center justify-between mb-1.5">
+                  <label className="text-xs font-semibold text-slate-600">
+                    简历版本
+                  </label>
+                  <button
+                    type="button"
+                    onClick={onManageResumes}
+                    className="p-1 rounded-md text-gray-400 hover:text-primary hover:bg-primary-light transition-colors"
+                    title="管理简历版本"
+                  >
+                    <Settings2 size={13} />
+                  </button>
+                </div>
+                <select
+                  value={resumeTag}
+                  onChange={(e) => setResumeTag(e.target.value)}
+                  className="w-full px-3 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-sm text-slate-700 transition-all"
+                >
+                  <option value="">不选择</option>
+                  {resumeVersions.map((tag) => (
+                    <option key={tag} value={tag}>{tag}</option>
+                  ))}
+                </select>
+              </div>
 
-          <div>
-            <div className="flex items-center justify-between mb-1.5">
-              <label className="text-xs font-semibold text-slate-600">
-                简历版本
-              </label>
-              <button
-                type="button"
-                onClick={onManageResumes}
-                className="p-1 rounded-md text-gray-400 hover:text-primary hover:bg-primary-light transition-colors"
-                title="管理简历版本"
-              >
-                <Settings2 size={13} />
-              </button>
-            </div>
-            <select
-              value={resumeTag}
-              onChange={(e) => setResumeTag(e.target.value)}
-              className="w-full px-3 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-sm text-slate-700 transition-all"
-            >
-              <option value="">不选择</option>
-              {resumeVersions.map((tag) => (
-                <option key={tag} value={tag}>{tag}</option>
-              ))}
-            </select>
-          </div>
+              <div>
+                <label className="block text-xs font-semibold text-slate-600 mb-1.5">
+                  投递链接
+                </label>
+                <div className="relative">
+                  <Link2 size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-300" />
+                  <input
+                    type="url"
+                    value={applyLink}
+                    onChange={(e) => setApplyLink(e.target.value)}
+                    placeholder="https://..."
+                    className={inputClass}
+                  />
+                </div>
+              </div>
 
-          <div>
-            <label className="block text-xs font-semibold text-slate-600 mb-1.5">
-              投递链接
-            </label>
-            <div className="relative">
-              <Link2 size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-300" />
-              <input
-                type="url"
-                value={applyLink}
-                onChange={(e) => setApplyLink(e.target.value)}
-                placeholder="https://..."
-                className={inputClass}
-              />
-            </div>
-          </div>
-
-          <div>
-            <label className="block text-xs font-semibold text-slate-600 mb-1.5">
-              备注
-            </label>
-            <div className="relative">
-              <FileText size={16} className="absolute left-3 top-3.5 text-gray-300" />
-              <textarea
-                value={notes}
-                onChange={(e) => setNotes(e.target.value)}
-                placeholder="补充说明..."
-                rows={3}
-                className={`${inputClass} pl-10 resize-none`}
-              />
-            </div>
-          </div>
+              <div>
+                <label className="block text-xs font-semibold text-slate-600 mb-1.5">
+                  备注
+                </label>
+                <div className="relative">
+                  <FileText size={16} className="absolute left-3 top-3.5 text-gray-300" />
+                  <textarea
+                    value={notes}
+                    onChange={(e) => setNotes(e.target.value)}
+                    placeholder="补充说明..."
+                    rows={3}
+                    className={`${inputClass} pl-10 resize-none`}
+                  />
+                </div>
+              </div>
+            </>
+          )}
 
           <div className="flex gap-3 pt-2">
             <button
@@ -268,7 +289,7 @@ function AddModal({ initialData, onClose, onSubmit, resumeVersions, onManageResu
               type="submit"
               className="flex-1 px-4 py-2.5 bg-primary text-white rounded-xl hover:bg-primary-dark transition-colors text-sm font-semibold shadow-sm shadow-primary/20"
             >
-              {isEdit ? '保存修改' : '确认添加'}
+              {isEdit ? '保存修改' : quickMode ? '回车保存' : '确认添加'}
             </button>
           </div>
         </form>
