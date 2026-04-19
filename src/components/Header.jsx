@@ -1,4 +1,4 @@
-import { Plus, Briefcase, CheckCircle, Clock, TrendingUp, Award, Target, Flame, Search, Eye, Trash } from 'lucide-react';
+import { Plus, Briefcase, CheckCircle, Clock, TrendingUp, Award, Target, Flame, Search, Eye, Trash, Code } from 'lucide-react';
 import SettingsDropdown from './SettingsDropdown';
 
 function StatCard({ icon: Icon, label, value, color }) {
@@ -161,6 +161,15 @@ export function Header({ onAddApplication, applications, trash, onSearch, onTogg
             >
               <Eye size={16} />
               <span>仅看高优</span>
+            </button>
+
+            <button
+              onClick={() => window.open('https://github.com/Soildworks/job-track-pro', '_blank', 'noopener,noreferrer')}
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-gray-100 text-gray-700 rounded-full hover:bg-[#00C3AA]/10 hover:text-[#00C3AA] transition-all duration-200"
+              title="查看产品设计文档与源码"
+            >
+              <Code size={16} className="group-hover:scale-110 transition-transform duration-200" />
+              <span className="text-xs font-medium">查看源码与设计文档</span>
             </button>
 
             <button
